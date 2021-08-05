@@ -20,7 +20,8 @@ app.use(express.json({ limit: '10kb' })); //maximum 10kb data can be sent inside
 // //getting all tours from database
 // app.get('/api/v1/tours', getAllTours);
 
-// //creatig a new tour and sending it to database
+// //creatig a new tour and sending it to database 
+
 // app.post('/api/v1/tours', createTour);
 
 // //getting only one tour via id .
