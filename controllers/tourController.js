@@ -1,6 +1,7 @@
 const Tour = require('../models/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 const AppError = require('../utils/AppError');
+const factory = require('./handlerFactory'); 
 const catchAsync = require('../utils/catchAsync');
 
 exports.aliasTopTours = (req, res, next) => {
@@ -34,7 +35,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
   // try {
   /////////////HERE WE ARE NOW USING CLASS BASED APIFEATURES
   //   //1(A).Filtering
-  //   const queryObj = { ...req.query };
+  //   const queryObj = { ...req.query };//url?search=5 req.query = {search: 5}
   //   const excludeFields = ['page', 'limit', 'sort', 'fields'];
   //   excludeFields.forEach((el) => delete queryObj[el]);
 
@@ -56,11 +57,11 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
   //     const fields = req.query.fields.split(',').join(' ');
   //     query = query.select(fields);
   //   } else {
-  //     query = query.select('-__v');
+  //     query = query.select('-__v');//default selection 
   //   }
   //   //4.Pagination
   //   const page = req.query.page * 1 || 1;
-  //   const limit = req.query.limit * 1 || 100; //this number of doc should be present on each api call
+  //   const limit = req.query.limit * 1 || 100; //this number of doc should be presented on each api call
   //   const skip = (page - 1) * limit; //this number of document's should be skipped first
   //   if (req.query.page) {
   //     const numTours = await Tour.countDocuments();
@@ -94,7 +95,11 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
 exports.getTour = catchAsync(async (req, res, next) => {
   // try {
-  const tour = await Tour.findById(req.params.id);
+  const tour = await Tour.findById(req.params.id).populate('reviews'); 
+  // .populate({
+  //   path: 'guides',
+  //   select: '-__v -passwordChangedAt' //minus sign means that this will select all field but fields with (-) sign . 
+  // });
   //Could have tried something like : Tour.findOne({filter object})
   if (!tour) {
     return next(new AppError('Could not found tour with that ID', 404));
@@ -135,25 +140,25 @@ exports.updateTour = catchAsync(async (req, res, next) => {
   //   });
   // }
 });
-
-exports.deleteTour = catchAsync(async (req, res, next) => {
-  // try {
-  const tour = await Tour.findByIdAndDelete(req.params.id);
-  //Could have tried something like : Tour.findOne({filter object})
-  if (!tour) {
-    return next(new AppError('Could not found tour with that ID', 404));
-  }
-  res.status(204).json({
-    status: 'success',
-    data: null,
-  });
+exports.deleteTour = factory.deleteOne(Tour); 
+// exports.deleteTour = catchAsync(async (req, res, next) => {
+//   // try {
+//   const tour = await Tour.findByIdAndDelete(req.params.id);
+//   //Could have tried something like : Tour.findOne({filter object})
+//   if (!tour) {
+//     return next(new AppError('Could not found tour with that ID', 404));
+//   }
+//   res.status(204).json({
+//     status: 'success',
+//     data: null,
+//   });
   // } catch (err) {
   //   res.status(404).json({
   //     status: 'fail',
   //     message: err,
   //   });
   // }
-});
+// });
 
 exports.getTourStats = catchAsync(async (req, res, next) => {
   // try {
@@ -340,3 +345,5 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
 //     data: null,
 //   });
 // };
+
+

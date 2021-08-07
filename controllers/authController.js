@@ -6,31 +6,34 @@ const catchAsync = require('../utils/catchAsync');
 const sendEmail = require('../utils/email');
 const AppError = require('../utils/AppError');
 
+//****CREATING THE TOKEN  */
 const signToken = (id) =>
   jwt.sign({ id: id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
-const createSendToken = (user,statusCode,res) => {
+/**SENDING THE TOKEN VIA COOKIE */
+const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
   const cookieOptions = {
-    expires: new Date(Date.now()+process.env.JWT_COOKIE_EXPIRES_IN*86400), 
-    httpOnly: true, //send the cookie via http only 
-  }
-  if(process.env.NODE_ENV === 'production') cookieOptions.secure = true; 
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 86400),
+    httpOnly: true, //send the cookie via http only
+  };
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true; //secure options work on https only.
 
-  res.cookie('JWT',token,cookieOptions); 
+  //we should always send the jwt token via cookie
+  res.cookie('JWT', token, cookieOptions);
 
-  //Remove Password 
-  user.password = undefined; 
+  //Remove Password
+  user.password = undefined;
 
   res.status(statusCode).json({
     status: 'success',
     token,
     data: {
-      user
-    }
+      user,
+    },
   });
-}
+};
 exports.signup = catchAsync(async (req, res, next) => {
   //we are not validating that much ..
 
@@ -43,9 +46,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
     //role: req.body.role//don't write this line of code . cause it will give anyone power to make themself admin.
   });
-
-  //creating token
-  createSendToken(newUser,201,res);
+  //creating token and sending it with res.cookie and also sending the newUser data.
+  createSendToken(newUser, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -63,8 +65,9 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError('Incorrect Email or Password!', 401));
   }
   //3. if everything is ok, send token to client
-  createSendToken(user,200,res); 
+  createSendToken(user, 200, res);
 });
+
 exports.protect = catchAsync(async (req, res, next) => {
   //1) Getting token and check of it's there
   let token;
@@ -84,7 +87,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   //Decoded value will be actually the payload object itself.
   // console.log(decoded);
   //3. Check if user still exists.
-  //In this case let's think about an user whose password was changed cause his account was stolen and he changed his password to secure his id . So now if we don't check user's existance then it will run our codes bug and vulnarability.
+  //In this case let's think about an user whose password was changed cause his account was stolen and he changed his password to secure his id . So now if we don't check user's existance then it will run our codes into bug and vulnarability.
   const currentUser = await User.findById(decoded.id);
   if (!currentUser) {
     return next(
@@ -175,7 +178,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   await user.save();
   //3.Updated changedPasswordAt property on database.
   //Log the user in . Send jwt to user.
-  createSendToken(user,200,res); 
+  createSendToken(user, 200, res);
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -191,5 +194,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save(); //so that pre-save middle ware functions can run .
 
   //4.Log user in send Jwt
-  createSendToken(user,200,res); 
+  createSendToken(user, 200, res);
 });

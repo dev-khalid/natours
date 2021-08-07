@@ -1,8 +1,13 @@
 const express = require('express');
 const tourController = require('../controllers/tourController');
 const authController = require('../controllers/authController');
+const reviewRouter = require('./reviewRoutes'); 
 
 const router = express.Router();
+
+/**Mounting reviewRouter */
+router.use('/:tourId/reviews', reviewRouter); //router is just a middleware so we can use use(). 
+/**Nested routing.  */
 
 router
   .route('/top-5-cheap')

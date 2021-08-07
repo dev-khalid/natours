@@ -78,7 +78,6 @@ userSchema.pre(/^find/, function (next) {
   this.find({ active: { $ne: false } });
   next();
 });
-
 //Creating an instance of documents. .
 //We can call instance methods on a document created with userSchema
 userSchema.methods.correctPassword = async function (

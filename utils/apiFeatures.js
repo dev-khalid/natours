@@ -1,7 +1,7 @@
 class APIFeatures {
   constructor(query, queryString) {
     this.query = query; //Tour.find()
-    this.queryString = queryString; //request.query  -> it's in json formate
+    this.queryString = queryString; //request.query  -> it's in json formate / req.query - basically a query object. 
   }
 
   filter() {
@@ -12,7 +12,10 @@ class APIFeatures {
     //now we get the query params with excluded fields .
     //1(B) Advanced filtering with >= OR <= OR > OR < FEATURE on a certain field
     let queryStr = JSON.stringify(queryObj);
+    console.log(this.queryString); 
+    console.log(queryStr); 
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    console.log(queryStr); 
     this.query = this.query.find(JSON.parse(queryStr)); //here we are finding result with our queryStr obj.
     return this;
   }

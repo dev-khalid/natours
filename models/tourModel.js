@@ -102,8 +102,8 @@ const tourSchema = new mongoose.Schema(
     ],
     guides: [
       {
-        type: mongoose.Schema.ObjectId,
-        ref: 'User',
+        type: mongoose.Schema.ObjectId, //This is a special type of type that accept only mongodb id.
+        ref: 'User', //the reference is set to User collection.
       },
     ],
   },
@@ -116,6 +116,24 @@ const tourSchema = new mongoose.Schema(
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
+/**Virtual populate . 
+ * Creates a virtual field that we can use then . 
+ * And in the following code as it is a reference that's why we need to populate it so that we can bring the related data's . 
+ * Here it's reveiws. 
+ */
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
+});
 
+
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',//parent child relationship. this is being populated on path guides. 
+    select: '-__v -passwordChangedAt',//we dont' need this two field that's why we minused it . 
+  });
+  next();
+});
 const Tour = mongoose.model('Tour', tourSchema); //create's a new collection / table
 module.exports = Tour;
