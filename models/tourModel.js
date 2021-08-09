@@ -33,6 +33,7 @@ const tourSchema = new mongoose.Schema(
       default: 4.5,
       min: [1, 'Rating must be above 1.0'],
       max: [5, 'Rating must be below 5.0'],
+      set: (val) => Math.round(val*10)/10 //setter function will run whenever a new value is set . 
     },
     ratingsQuantity: {
       type: Number,
@@ -135,5 +136,10 @@ tourSchema.pre(/^find/, function (next) {
   });
   next();
 });
+
+tourSchema.index({price: 1, ratingsAverage: -1}); //here indexing means hashing . and with hashing we can access a data fast. 
+//price: 1 means data is sorted in ascending order. 
+//ratingsAverage: -1 means data is sorted in descending order. 
+tourSchema.index({slug: 1}); 
 const Tour = mongoose.model('Tour', tourSchema); //create's a new collection / table
 module.exports = Tour;

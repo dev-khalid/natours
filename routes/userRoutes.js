@@ -1,21 +1,35 @@
 const express = require('express');
 
-const authController = require('../controllers/authController'); 
+const authController = require('../controllers/authController');
 
 const userController = require('../controllers/userController');
 
 const router = express.Router();
 //thease routing does not follow rest api structure
-router.post('/signup',authController.signup); 
-router.post('/login',authController.login); 
-router.post('/forgotPassword',authController.forgotPassword); 
-router.patch('/resetPassword/:token',authController.resetPassword); 
-router.patch('/updateMyPassword',authController.protect,authController.updatePassword); 
+/**@DESC following 5 middleware should be assesible by any user*/
+router.post('/signup', authController.signup);
+router.post('/login', authController.login);
+router.post('/forgotPassword', authController.forgotPassword);
+router.patch('/resetPassword/:token', authController.resetPassword);
+router.patch(
+  '/updateMyPassword',
+  authController.protect,
+  authController.updatePassword
+);
 
-router.patch('/updateMe',authController.protect,userController.updateMe); 
-router.delete('/deleteMe',authController.protect,userController.deleteMe); 
+//**As middleware runs in sequence so if we want to protect the following routes then it would be enough if i just put a middleware protection like this...  */
+router.use(authController.protect);
 
-//REST API Structuring ... 
+router.get('/me', userController.getMe, userController.getUser);
+router.patch('/updateMe', userController.updateMe);
+router.delete('/deleteMe', userController.deleteMe);
+
+
+
+
+router.use(authController.restrictTo('admin')); 
+//FOLLOWING ROUTES WILL BE ONLY AVAILABLE TO LOGGED IN -> ADMIN ONLY . 
+//REST API Structuring ...
 router
   .route('/')
   .get(userController.getAllUsers)

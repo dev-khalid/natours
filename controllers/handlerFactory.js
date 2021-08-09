@@ -3,7 +3,7 @@ const AppError = require('../utils/AppError');
 const APIFeatures = require('../utils/apiFeatures'); 
 
 exports.deleteOne = (Model) =>  catchAsync(async (req,res,next) => {
-  const doc = await Model.findByIdAndDelete(req.params.id); 
+  const doc = await Model.findByIdAndDelete(req.params.id); //for deletion of any data we need a valid id inside params. 
   if(!doc) {
     return next(new AppError('No document found with this ID!',404)); 
   }
@@ -14,6 +14,7 @@ exports.deleteOne = (Model) =>  catchAsync(async (req,res,next) => {
 }); 
 
 exports.updateOne = (Model) => catchAsync(async (req,res,next) => {
+  if(req.body.password) return next(new AppError('This URL is not for password update. ',400)); //deny password changes. 
   const doc = await Model.findByIdAndUpdate(req.params.id, req.body,{
     new: true, 
     runValidators: true
@@ -64,8 +65,7 @@ exports.getAll = Model => catchAsync(async (req,res,next) => {
     .filter()
     .sort()
     .limitFields()
-    .paginate();
-   /**@NEED_TO_UNDERSTAND @APIFeatures */
+    .paginate(); 
    const doc = await features.query; 
    res.status(200).json({
      status: 'success',
